@@ -2,6 +2,7 @@ package repository
 
 import (
 	"errors"
+	"time"
 	"product-api/database"
 	"product-api/models"
 )
@@ -16,10 +17,23 @@ func NewProductRepository() *ProductRepository {
 
 // Create adds a new product to the database
 func (r *ProductRepository) Create(product *models.Product) error {
-	query := `INSERT INTO products (name, description, price) VALUES (?, ?, ?)`
+	// Set timestamps
+	now := time.Now()
+	product.CreatedAt = now
+	product.UpdatedAt = now
+	
+	query := `INSERT INTO products (name, description, price, quantity, created_at, updated_at, sku) 
+	          VALUES (?, ?, ?, ?, ?, ?, ?)`
 	
 	// Execute the query
-	result, err := database.DB.Exec(query, product.Name, product.Description, product.Price)
+	result, err := database.DB.Exec(query, 
+		product.Name, 
+		product.Description, 
+		product.Price,
+		product.Quantity,
+		product.CreatedAt,
+		product.UpdatedAt,
+		product.SKU)
 	if err != nil {
 		return err
 	}
@@ -37,7 +51,7 @@ func (r *ProductRepository) Create(product *models.Product) error {
 
 // GetAll retrieves all products from the database
 func (r *ProductRepository) GetAll() ([]models.Product, error) {
-	query := `SELECT id, name, description, price FROM products`
+	query := `SELECT id, name, description, price, quantity, created_at, updated_at, sku FROM products`
 	
 	// Execute the query
 	rows, err := database.DB.Query(query)
@@ -50,7 +64,15 @@ func (r *ProductRepository) GetAll() ([]models.Product, error) {
 	var products []models.Product
 	for rows.Next() {
 		var product models.Product
-		if err := rows.Scan(&product.ID, &product.Name, &product.Description, &product.Price); err != nil {
+		if err := rows.Scan(
+			&product.ID, 
+			&product.Name, 
+			&product.Description, 
+			&product.Price,
+			&product.Quantity,
+			&product.CreatedAt,
+			&product.UpdatedAt,
+			&product.SKU); err != nil {
 			return nil, err
 		}
 		products = append(products, product)
@@ -65,10 +87,19 @@ func (r *ProductRepository) GetAll() ([]models.Product, error) {
 
 // GetByID retrieves a product by its ID
 func (r *ProductRepository) GetByID(id uint) (models.Product, error) {
-	query := `SELECT id, name, description, price FROM products WHERE id = ?`
+	query := `SELECT id, name, description, price, quantity, created_at, updated_at, sku 
+	          FROM products WHERE id = ?`
 	
 	var product models.Product
-	err := database.DB.QueryRow(query, id).Scan(&product.ID, &product.Name, &product.Description, &product.Price)
+	err := database.DB.QueryRow(query, id).Scan(
+		&product.ID, 
+		&product.Name, 
+		&product.Description, 
+		&product.Price,
+		&product.Quantity,
+		&product.CreatedAt,
+		&product.UpdatedAt,
+		&product.SKU)
 	if err != nil {
 		return models.Product{}, err
 	}
@@ -78,9 +109,21 @@ func (r *ProductRepository) GetByID(id uint) (models.Product, error) {
 
 // Update updates a product in the database
 func (r *ProductRepository) Update(product models.Product) error {
-	query := `UPDATE products SET name = ?, description = ?, price = ? WHERE id = ?`
+	// Update timestamp
+	product.UpdatedAt = time.Now()
 	
-	result, err := database.DB.Exec(query, product.Name, product.Description, product.Price, product.ID)
+	query := `UPDATE products 
+	          SET name = ?, description = ?, price = ?, quantity = ?, updated_at = ?, sku = ? 
+	          WHERE id = ?`
+	
+	result, err := database.DB.Exec(query, 
+		product.Name, 
+		product.Description, 
+		product.Price,
+		product.Quantity,
+		product.UpdatedAt,
+		product.SKU,
+		product.ID)
 	if err != nil {
 		return err
 	}

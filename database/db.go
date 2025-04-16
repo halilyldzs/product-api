@@ -48,7 +48,11 @@ func createTable(db *sql.DB) {
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
 		name TEXT NOT NULL,
 		description TEXT,
-		price REAL NOT NULL
+		price REAL NOT NULL,
+		quantity INTEGER DEFAULT 0,
+		created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+		updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+		sku TEXT
 	);`
 
 	_, err := db.Exec(createTableSQL)

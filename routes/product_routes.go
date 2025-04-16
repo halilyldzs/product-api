@@ -48,6 +48,12 @@ func addProductHandler(c *fiber.Ctx) error {
 		})
 	}
 
+	if product.Quantity < 0 {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "Quantity cannot be negative",
+		})
+	}
+
 	// Add to database
 	err := productRepo.Create(&product)
 	if err != nil {
@@ -151,6 +157,12 @@ func updateProductHandler(c *fiber.Ctx) error {
 	if product.Price <= 0 {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"error": "Price must be greater than 0",
+		})
+	}
+
+	if product.Quantity < 0 {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "Quantity cannot be negative",
 		})
 	}
 

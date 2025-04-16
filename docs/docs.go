@@ -227,6 +227,10 @@ const docTemplate = `{
         "models.Product": {
             "type": "object",
             "properties": {
+                "created_at": {
+                    "description": "Timestamp of creation",
+                    "type": "string"
+                },
                 "description": {
                     "description": "Detailed description",
                     "type": "string"
@@ -242,6 +246,18 @@ const docTemplate = `{
                 "price": {
                     "description": "Price of the product",
                     "type": "number"
+                },
+                "quantity": {
+                    "description": "Quantity of the product",
+                    "type": "integer"
+                },
+                "sku": {
+                    "description": "Stock Keeping Unit",
+                    "type": "string"
+                },
+                "updated_at": {
+                    "description": "Timestamp of last update",
+                    "type": "string"
                 }
             }
         }
