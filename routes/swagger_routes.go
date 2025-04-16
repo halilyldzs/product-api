@@ -4,7 +4,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/swagger"
 
-	// _ "product-api/docs" // Uncomment this line after running swag init
+	_ "product-api/docs" // Import generated docs
 )
 
 // SetupSwaggerRoutes configures the Swagger UI route
