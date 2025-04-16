@@ -2,6 +2,9 @@ basePath: /api/v1
 definitions:
   models.Product:
     properties:
+      barcode:
+        description: Barcode of the product
+        type: string
       created_at:
         description: Timestamp of creation
         type: string
@@ -25,6 +28,48 @@ definitions:
         type: string
       updated_at:
         description: Timestamp of last update
+        type: string
+    type: object
+  models.ProductCreateDTO:
+    properties:
+      barcode:
+        description: Barcode of the product
+        type: string
+      description:
+        description: Detailed description
+        type: string
+      name:
+        description: Name of the product
+        type: string
+      price:
+        description: Price of the product
+        type: number
+      quantity:
+        description: Quantity of the product
+        type: integer
+      sku:
+        description: Stock Keeping Unit
+        type: string
+    type: object
+  models.ProductUpdateDTO:
+    properties:
+      barcode:
+        description: Barcode of the product
+        type: string
+      description:
+        description: Detailed description
+        type: string
+      name:
+        description: Name of the product
+        type: string
+      price:
+        description: Price of the product
+        type: number
+      quantity:
+        description: Quantity of the product
+        type: integer
+      sku:
+        description: Stock Keeping Unit
         type: string
     type: object
 host: localhost:8080
@@ -66,7 +111,7 @@ paths:
         name: product
         required: true
         schema:
-          $ref: '#/definitions/models.Product'
+          $ref: '#/definitions/models.ProductCreateDTO'
       produces:
       - application/json
       responses:
@@ -149,7 +194,7 @@ paths:
         name: product
         required: true
         schema:
-          $ref: '#/definitions/models.Product'
+          $ref: '#/definitions/models.ProductUpdateDTO'
       produces:
       - application/json
       responses:

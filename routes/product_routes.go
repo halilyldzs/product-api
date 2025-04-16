@@ -22,37 +22,40 @@ func init() {
 // @Tags products
 // @Accept json
 // @Produce json
-// @Param product body models.Product true "Product to add"
+// @Param product body models.ProductCreateDTO true "Product to add"
 // @Success 201 {object} models.Product
 // @Failure 400 {object} map[string]string
 // @Router /products [post]
 func addProductHandler(c *fiber.Ctx) error {
-	// Parse request body into Product struct
-	var product models.Product
-	if err := c.BodyParser(&product); err != nil {
+	// Parse request body into ProductCreateDTO struct
+	var productDTO models.ProductCreateDTO
+	if err := c.BodyParser(&productDTO); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"error": "Cannot parse JSON",
 		})
 	}
 
 	// Validate input
-	if product.Name == "" {
+	if productDTO.Name == "" {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"error": "Name is required",
 		})
 	}
 
-	if product.Price <= 0 {
+	if productDTO.Price <= 0 {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"error": "Price must be greater than 0",
 		})
 	}
 
-	if product.Quantity < 0 {
+	if productDTO.Quantity < 0 {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"error": "Quantity cannot be negative",
 		})
 	}
+
+	// Convert DTO to Product entity
+	product := productDTO.ToProduct()
 
 	// Add to database
 	err := productRepo.Create(&product)
@@ -121,7 +124,7 @@ func getProductHandler(c *fiber.Ctx) error {
 // @Accept json
 // @Produce json
 // @Param id path int true "Product ID"
-// @Param product body models.Product true "Updated product data"
+// @Param product body models.ProductUpdateDTO true "Updated product data"
 // @Success 200 {object} models.Product
 // @Failure 400 {object} map[string]string
 // @Failure 404 {object} map[string]string
@@ -137,43 +140,46 @@ func updateProductHandler(c *fiber.Ctx) error {
 	}
 
 	// Parse request body
-	var product models.Product
-	if err := c.BodyParser(&product); err != nil {
+	var productDTO models.ProductUpdateDTO
+	if err := c.BodyParser(&productDTO); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"error": "Cannot parse JSON",
 		})
 	}
 
-	// Set the ID from the URL
-	product.ID = uint(id)
-
 	// Validate input
-	if product.Name == "" {
+	if productDTO.Name == "" {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"error": "Name is required",
 		})
 	}
 
-	if product.Price <= 0 {
+	if productDTO.Price <= 0 {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"error": "Price must be greater than 0",
 		})
 	}
 
-	if product.Quantity < 0 {
+	if productDTO.Quantity < 0 {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"error": "Quantity cannot be negative",
 		})
 	}
 
+	// Get existing product
+	product, err := productRepo.GetByID(uint(id))
+	if err != nil {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+			"error": "Product not found",
+		})
+	}
+
+	// Apply changes from DTO
+	productDTO.ApplyToProduct(&product)
+
 	// Update product in database
 	err = productRepo.Update(product)
 	if err != nil {
-		if err.Error() == "product not found" {
-			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
-				"error": "Product not found",
-			})
-		}
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": "Failed to update product",
 		})

@@ -65,7 +65,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.Product"
+                            "$ref": "#/definitions/models.ProductCreateDTO"
                         }
                     }
                 ],
@@ -151,7 +151,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.Product"
+                            "$ref": "#/definitions/models.ProductUpdateDTO"
                         }
                     }
                 ],
@@ -227,6 +227,10 @@ const docTemplate = `{
         "models.Product": {
             "type": "object",
             "properties": {
+                "barcode": {
+                    "description": "Barcode of the product",
+                    "type": "string"
+                },
                 "created_at": {
                     "description": "Timestamp of creation",
                     "type": "string"
@@ -257,6 +261,64 @@ const docTemplate = `{
                 },
                 "updated_at": {
                     "description": "Timestamp of last update",
+                    "type": "string"
+                }
+            }
+        },
+        "models.ProductCreateDTO": {
+            "type": "object",
+            "properties": {
+                "barcode": {
+                    "description": "Barcode of the product",
+                    "type": "string"
+                },
+                "description": {
+                    "description": "Detailed description",
+                    "type": "string"
+                },
+                "name": {
+                    "description": "Name of the product",
+                    "type": "string"
+                },
+                "price": {
+                    "description": "Price of the product",
+                    "type": "number"
+                },
+                "quantity": {
+                    "description": "Quantity of the product",
+                    "type": "integer"
+                },
+                "sku": {
+                    "description": "Stock Keeping Unit",
+                    "type": "string"
+                }
+            }
+        },
+        "models.ProductUpdateDTO": {
+            "type": "object",
+            "properties": {
+                "barcode": {
+                    "description": "Barcode of the product",
+                    "type": "string"
+                },
+                "description": {
+                    "description": "Detailed description",
+                    "type": "string"
+                },
+                "name": {
+                    "description": "Name of the product",
+                    "type": "string"
+                },
+                "price": {
+                    "description": "Price of the product",
+                    "type": "number"
+                },
+                "quantity": {
+                    "description": "Quantity of the product",
+                    "type": "integer"
+                },
+                "sku": {
+                    "description": "Stock Keeping Unit",
                     "type": "string"
                 }
             }

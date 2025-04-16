@@ -1,15 +1,17 @@
 package database
 
 import (
-	"database/sql"
 	"log"
 	"os"
 	"path/filepath"
+	"product-api/models"
 
-	_ "modernc.org/sqlite" // Pure Go SQLite driver, no CGO needed
+	"github.com/glebarez/sqlite" // Pure Go SQLite driver for GORM, no CGO needed
+	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
-var DB *sql.DB
+var DB *gorm.DB
 
 // InitDB initializes the database connection
 func InitDB() {
@@ -24,47 +26,43 @@ func InitDB() {
 
 	// Open the SQLite database file
 	dbPath := filepath.Join(dbDir, "products.db")
-	db, err := sql.Open("sqlite", dbPath) // Driver name is "sqlite" (not "sqlite3")
-	if err != nil {
-		log.Fatalf("Failed to open database: %v", err)
+
+	// Configure GORM
+	config := &gorm.Config{
+		Logger: logger.Default.LogMode(logger.Info), // For more detailed logging
 	}
 
-	// Test the connection
-	if err = db.Ping(); err != nil {
+	// Open the database connection with pure Go driver
+	var err error
+	DB, err = gorm.Open(sqlite.Open(dbPath), config)
+	if err != nil {
 		log.Fatalf("Failed to connect to database: %v", err)
 	}
 
-	// Create products table if it doesn't exist
-	createTable(db)
+	// Auto Migrate the schema
+	migrateDB()
 
-	DB = db
 	log.Printf("Connected to SQLite database at %s", dbPath)
 }
 
-// createTable creates the products table if it doesn't exist
-func createTable(db *sql.DB) {
-	createTableSQL := `
-	CREATE TABLE IF NOT EXISTS products (
-		id INTEGER PRIMARY KEY AUTOINCREMENT,
-		name TEXT NOT NULL,
-		description TEXT,
-		price REAL NOT NULL,
-		quantity INTEGER DEFAULT 0,
-		created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-		updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-		sku TEXT
-	);`
-
-	_, err := db.Exec(createTableSQL)
-	if err != nil {
-		log.Fatalf("Failed to create products table: %v", err)
+// migrateDB automatically creates/updates database tables based on models
+func migrateDB() {
+	if err := DB.AutoMigrate(&models.Product{}); err != nil {
+		log.Fatalf("Failed to migrate database: %v", err)
 	}
+	log.Println("Database migration completed")
 }
 
 // CloseDB closes the database connection
 func CloseDB() {
-	if DB != nil {
-		DB.Close()
-		log.Println("Database connection closed")
+	sqlDB, err := DB.DB()
+	if err != nil {
+		log.Printf("Error getting DB instance: %v", err)
+		return
 	}
+	if err := sqlDB.Close(); err != nil {
+		log.Printf("Error closing database: %v", err)
+		return
+	}
+	log.Println("Database connection closed")
 } 
